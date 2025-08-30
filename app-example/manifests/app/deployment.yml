@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo
+  annotations:
+    secret.reloader.stakater.com/auto: "true"
+spec:
+  replicas: 3
+  revisionHistoryLimit: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: # Rollout minimal (no-downtime) : crée 1 pod supplémentaire, ne retire aucun pod dispo
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: demo
+  template:
+    metadata:
+      labels:
+        app: demo
+    spec:
+      terminationGracePeriodSeconds: 5 # pour accélérer la démo
+      containers:
+        - name: demo
+          image: docker.io/naqa92/simple-secret-python-app:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5000
+          volumeMounts:
+            - name: mysql
+              mountPath: "/secrets"
+              readOnly: true
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 5000
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 5000
+          resources: {}
+      volumes:
+        - name: mysql
+          secret:
+            secretName: mysql-credentials
