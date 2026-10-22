@@ -7,7 +7,8 @@ COPY requirements.txt .
 COPY app.py .
 
 # Installer les dépendances Python
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade "pip>=26.2.2" \
+    && pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 5000
 
